@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure OCR Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="auth-page">
+  <!-- ===== AUTH SCREEN ===== -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <h1>Secure OCR</h1>
+        <p class="tagline">Multilingual text extraction &amp; data-inspection platform</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="showTab('login')">Sign In</button>
+        <button class="tab-btn" id="tabRegister" onclick="showTab('register')">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="auth-form" onsubmit="return handleLogin(event)">
+        <label for="loginUser">Username</label>
+        <input type="text" id="loginUser" placeholder="Enter your username" required autocomplete="username" />
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" placeholder="Enter your password" required autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        <div class="form-error" id="loginError"></div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" class="auth-form hidden" onsubmit="return handleRegister(event)">
+        <label for="regUser">Username</label>
+        <input type="text" id="regUser" placeholder="Choose a username" required autocomplete="username" />
+        <label for="regPass">Password</label>
+        <input type="password" id="regPass" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password" />
+        <label for="regPass2">Confirm Password</label>
+        <input type="password" id="regPass2" placeholder="Repeat your password" required autocomplete="new-password" />
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        <div class="form-error" id="registerError"></div>
+      </form>
+    </div>
+    <p class="auth-note">AES-256 encrypted storage &middot; JWT-secured API</p>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="appScreen" class="app-screen hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand small">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="brand-name">Secure OCR</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-menu" id="userMenu">
+          <button class="user-menu-trigger" onclick="toggleMenu(event)">
+            <span class="avatar" id="avatarLetter">?</span>
+            <span id="usernameLabel">user</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="user-dropdown hidden" id="userDropdown">
+            <button class="dropdown-item" onclick="openPasswordModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Change Password
+            </button>
+            <button class="dropdown-item danger" onclick="openDeleteModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete Account
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="logout()">Sign Out</button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <!-- UPLOAD PANEL -->
+      <section class="panel upload-panel">
+        <h2>Upload Document</h2>
+        <p class="muted">Drop an image (JPEG / PNG / WebP, max 5 MB) to extract multilingual text.</p>
+
+        <div id="dropzone" class="dropzone" onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault(); this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleDrop(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-icon">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p><strong>Click to upload</strong> or drag &amp; drop</p>
+          <span class="muted small">Supported: JPG, PNG, WebP &middot; max 5 MB</span>
+          <img id="previewImg" class="preview-img hidden" alt="preview" />
+        </div>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden onchange="handleFileSelect(event)" />
+
+        <div class="upload-actions">
+          <button id="scanBtn" class="btn btn-primary" disabled onclick="runOcr()">
+            <span class="btn-label">Extract Text</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </div>
+        <div class="form-error" id="ocrError"></div>
+      </section>
+
+      <!-- RESULTS PANEL -->
+      <section id="resultsPanel" class="panel results-panel hidden">
+        <div class="panel-head">
+          <h2>Extraction Result</h2>
+          <span id="confidenceBadge" class="badge"></span>
+        </div>
+
+        <div class="results-grid">
+          <div class="result-col">
+            <h3>Raw Text</h3>
+            <pre id="rawText" class="raw-text"></pre>
+          </div>
+          <div class="result-col">
+            <h3>Detected Entities</h3>
+            <div id="entities" class="entities"></div>
+          </div>
+        </div>
+        <div id="reviewWarning" class="review-warning hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Low confidence result — please review the extracted text for accuracy.</span>
+        </div>
+      </section>
+
+      <!-- DOCUMENTS HISTORY -->
+      <section class="panel history-panel">
+        <div class="panel-head">
+          <h2>Document History</h2>
+          <span class="muted small" id="docCount"></span>
+        </div>
+        <div id="docList" class="doc-list">
+          <p class="muted">No documents yet.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== CHANGE PASSWORD MODAL ===== -->
+  <div id="passwordModal" class="modal-overlay hidden" onclick="closeModal('passwordModal', event)">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Change Password</h3>
+        <button class="modal-close" onclick="closeModal('passwordModal')">&times;</button>
+      </div>
+      <form onsubmit="return handleChangePassword(event)">
+        <label for="currentPass">Current Password</label>
+        <input type="password" id="currentPass" placeholder="Enter current password" required autocomplete="current-password" />
+        <label for="newPass">New Password</label>
+        <input type="password" id="newPass" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password" />
+        <label for="confirmNewPass">Confirm New Password</label>
+        <input type="password" id="confirmNewPass" placeholder="Repeat new password" required autocomplete="new-password" />
+        <div class="form-error" id="passwordError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('passwordModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary modal-submit">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DELETE ACCOUNT MODAL ===== -->
+  <div id="deleteModal" class="modal-overlay hidden" onclick="closeModal('deleteModal', event)">
+    <div class="modal-card modal-danger">
+      <div class="modal-head">
+        <h3>Delete Account</h3>
+        <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+      </div>
+      <div class="delete-warning">
+        <p>Are you sure you want to permanently delete your account?</p>
+        <p class="muted">This will remove your <strong>account and all your OCR documents</strong>. This action <strong>cannot be undone</strong>.</p>
+      </div>
+      <div class="form-error" id="deleteError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="handleDeleteAccount()">Yes, Delete My Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
