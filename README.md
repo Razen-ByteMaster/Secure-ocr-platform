@@ -215,4 +215,4 @@ secure-ocr-platform/
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Built by [Razen Moamen](https://github.com) as a portfolio project. PRs welcome! 🎉
+MIT — see [LICENSE](LICENSE). Built by [Razen-ByteMaster](https://github.com) as a portfolio project. PRs welcome! 🎉
